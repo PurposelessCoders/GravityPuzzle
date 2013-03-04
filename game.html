@@ -1,0 +1,140 @@
+<html>
+   <head>
+  
+   </head>
+   <body onload="init();">
+      <canvas id="canvas" width="800" height="600" style="background-color:#333333;" ></canvas>
+   </body>
+   <script type="text/javascript" src="Libs/Box2dWeb-2.1.a.3.js"></script>
+   <script type="text/javascript" src="./TurningKube.js">
+
+
+   </script>
+   <script type="text/javascript">
+	  
+	   var groupLeader;
+      function init() {
+         TurningKube.CurrentWorld = new TurningKube.Elements.World();
+
+        
+         TurningKube.CurrentWorld.fixDef.density = 1.0;
+         TurningKube.CurrentWorld.fixDef.friction = 0.5;
+         TurningKube.CurrentWorld.fixDef.restitution = 0.2;
+
+         groupLeader = new TurningKube.Elements.MovingGroups(10 ,30);
+        
+         for(var i = 0; i < 30; ++i) {
+            new TurningKube.Elements.StandardWall(Math.random() * 79, Math.random() * 59, groupLeader);
+         }
+
+         groupLeader = new TurningKube.Elements.MovingGroups(40 ,30);
+        
+         for(var i = 0; i < 30; ++i) {
+            new TurningKube.Elements.StandardWall(Math.random() * 79, Math.random() * 59, groupLeader);
+         }
+
+         groupLeader = new TurningKube.Elements.MovingGroups(70 ,30);
+        
+         for(var i = 0; i < 30; ++i) {
+            new TurningKube.Elements.StandardWall(Math.random() * 79, Math.random() * 59, groupLeader);
+         }
+
+         var tmp = new TurningKube.Elements.StandardWall(79, 59, groupLeader);
+        // tmp.Freeze();
+         //setup debug draw
+         TurningKube.CurrentWorld.debugDraw = new Box2D.Dynamics.b2DebugDraw();
+			TurningKube.CurrentWorld.debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
+			TurningKube.CurrentWorld.debugDraw.SetDrawScale(10.0);
+			TurningKube.CurrentWorld.debugDraw.SetFillAlpha(0.5);
+			TurningKube.CurrentWorld.debugDraw.SetLineThickness(1.0);
+			TurningKube.CurrentWorld.debugDraw.SetFlags(Box2D.Dynamics.b2DebugDraw.e_shapeBit | Box2D.Dynamics.b2DebugDraw.e_jointBit);
+			TurningKube.CurrentWorld.world.SetDebugDraw(TurningKube.CurrentWorld.debugDraw);
+         
+         window.setInterval(update, 1000 / 60);
+         }
+         //mouse
+         
+         var mouseX, mouseY, mousePVec, isMouseDown, selectedBody;
+         var canvasPosition = getElementPosition(document.getElementById("canvas"));
+         
+         document.addEventListener("mousedown", function(e) {
+            isMouseDown = true;
+            handleMouseMove(e);
+            document.addEventListener("mousemove", handleMouseMove, true);
+         }, true);
+         
+         document.addEventListener("mouseup", function() {
+            document.removeEventListener("mousemove", handleMouseMove, true);
+            isMouseDown = false;
+            mouseX = undefined;
+            mouseY = undefined;
+         }, true);
+         
+         function handleMouseMove(e) {
+            mouseX = (e.clientX - canvasPosition.x) / 30;
+            mouseY = (e.clientY - canvasPosition.y) / 30;
+         };
+         
+         function getBodyAtMouse() {
+            mousePVec = new b2Vec2(mouseX, mouseY);
+            var aabb = new b2AABB();
+            aabb.lowerBound.Set(mouseX - 0.001, mouseY - 0.001);
+            aabb.upperBound.Set(mouseX + 0.001, mouseY + 0.001);
+            
+            // Query the world for overlapping shapes.
+
+            selectedBody = null;
+            TurningKube.CurrentWorld.world.QueryAABB(getBodyCB, aabb);
+            return selectedBody;
+         }
+
+         function getBodyCB(fixture) {
+            if(fixture.GetBody().GetType() != b2Body.b2_staticBody) {
+               if(fixture.GetShape().TestPoint(fixture.GetBody().GetTransform(), mousePVec)) {
+                  selectedBody = fixture.GetBody();
+                  return false;
+               }
+            }
+            return true;
+         }
+         
+         //update
+         
+         function update() {
+         
+			if (isMouseDown) {
+   			TurningKube.CurrentWorld.Rotation();
+			}
+
+             TurningKube.CurrentWorld.world.Step(1 / 60, 10, 10);
+             TurningKube.CurrentWorld.world.DrawDebugData();
+             TurningKube.CurrentWorld.world.ClearForces();
+         };
+         
+         //helpers
+         
+         //http://js-tut.aardon.de/js-tut/tutorial/position.html
+         function getElementPosition(element) {
+            var elem=element, tagname="", x=0, y=0;
+           
+            while((typeof(elem) == "object") && (typeof(elem.tagName) != "undefined")) {
+               y += elem.offsetTop;
+               x += elem.offsetLeft;
+               tagname = elem.tagName.toUpperCase();
+
+               if(tagname == "BODY")
+                  elem=0;
+
+               if(typeof(elem) == "object") {
+                  if(typeof(elem.offsetParent) == "object")
+                     elem = elem.offsetParent;
+               }
+            }
+
+            return {x: x, y: y};
+         }
+   
+   </script>
+   
+   
+</html>
