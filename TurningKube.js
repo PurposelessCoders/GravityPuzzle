@@ -11,7 +11,7 @@
  */
 
 var TurningKube = {};
-(function() {
+(function () {
 	TurningKube.Elements = {};
 	TurningKube.Editor = {};
 	TurningKube.Level = {};
@@ -22,9 +22,9 @@ var TurningKube = {};
 /*
  * Definitions du monde du Gameplay
  */
-(function() {
+(function () {
 	//Constructor
-	TurningKube.Elements.World = function() {
+	TurningKube.Elements.World = function () {
 		console.log("Creat a new World");
 		this.fixDef.density = 1.0;
 		this.fixDef.friction = 0.5;
@@ -54,7 +54,9 @@ var TurningKube = {};
 		movingGroups: [],
 		freezzeQuantity: 0,
 		freezzeStatus: false,
-		Freezze: function() {
+		//Level Datas
+		name: "",
+		Freezze: function () {
 			var my_i = 0;
 			this.freezzeStatus = this.freezzeStatus ^ true;
 			if (this.freezzeStatus) {
@@ -68,10 +70,31 @@ var TurningKube = {};
 				}
 			}
 		},
-		Rotation: function(side) {
-			var my_i = 0;	
+		Rotation: function (side) {
+			var my_i = 0;
 			for (my_i = 0; my_i < this.movingGroups.length; my_i++) {
 				this.movingGroups[my_i].Turn();
+			}
+		},
+		LoadLevel: function (level) {
+			this.name = level.name;
+			var myI, myJ, myObjectName, myObjectParameters, myCurrentGroup;
+			for (myI = 0; myI < level["Groups"].length; myI++) {
+				myCurrentGroup = new TurningKube.Elements.MovingGroups(level["Groups"][myI]["posX"], level["Groups"][myI]["posY"]);
+				for (myJ = 0; myJ < level["Groups"][myI]["children"].length; myJ++) {
+					myObjectName = level["Groups"][myI]["children"][myJ]["name"];
+					myObjectParameters = level["Groups"][myI]["children"][myJ]["parameters"];
+					myObjectParameters.push(myCurrentGroup);
+
+					(function () {
+						function F(args) {
+							return TurningKube.Elements[myObjectName].apply(this, args);
+						}
+						F.prototype = TurningKube.Elements[myObjectName].prototype;
+						return new F(myObjectParameters);
+					})();
+					// same as TurningKube.Elements[myObjectName].apply(null, (myObjectParameters));
+				}
 			}
 		}
 	};
@@ -81,9 +104,9 @@ var TurningKube = {};
 /*
  * Definitions des elements du Gameplay
  */
-(function() {
+(function () {
 	//Constructor
-	TurningKube.Elements.MovingGroups = function(posX, posY) {
+	TurningKube.Elements.MovingGroups = function (posX, posY) {
 		TurningKube.CurrentWorld.bodyDef.type = TurningKube.CurrentWorld.b2Body.b2_staticBody;
 
 		TurningKube.CurrentWorld.density = 1.0;
@@ -101,64 +124,84 @@ var TurningKube = {};
 		child: [],
 		img: undefined,
 		bodyRef: undefined,
-		Addchild: function(childRef) {
+		Addchild: function (childRef) {
 			this.child.push(childRef);
 			this.localJoint.Initialize(this.bodyRef, childRef, this.bodyRef.GetWorldCenter());
 			TurningKube.CurrentWorld.world.CreateJoint(this.localJoint);
 			this.bodyRef.CreateFixture(TurningKube.CurrentWorld.fixDef);
 
 		},
-		Turn: function() {
+		Turn: function () {
 			var my_i = 0;
 			for (my_i = 0; my_i < this.child.length; my_i++) {
 				this.child[my_i].SetAwake(true);
 			}
-			this.bodyRef.SetAngle(this.bodyRef.GetAngle() + 0.1);
+			this.bodyRef.SetAngle(this.bodyRef.GetAngle() + 0.02);
 		},
-		Freezze: function() {
+		Freezze: function () {
 
 		},
-		UnFreezze: function() {
+		UnFreezze: function () {
 
 		}
 	};
 })();
 
 
-(function() {
+(function () {
 	//Prototype
-	TurningKube.Elements.StandardElem = function(posX, posY, group) {
+	TurningKube.Elements.StandardElem = function (posX, posY, group) {
 
 		TurningKube.CurrentWorld.bodyDef.position.y = posY;
 		TurningKube.CurrentWorld.bodyDef.position.x = posX;
 		this.bodyRef = TurningKube.CurrentWorld.world.CreateBody(TurningKube.CurrentWorld.bodyDef);
 		this.bodyRef.CreateFixture(TurningKube.CurrentWorld.fixDef);
-		group.Addchild(this.bodyRef);
 	};
 	//Declaration
 	TurningKube.Elements.StandardElem.prototype = {
 		img: undefined,
 		bodyRef: undefined,
-		Freezze: function() {
+		Freezze: function () {
 
 		},
-		UnFreezze: function() {
+		UnFreezze: function () {
 
 		}
 	};
 })();
 
-(function() {
+(function () {
 	//Prototype
-	TurningKube.Elements.StandardWall = function(posX, posY, group) {
+	TurningKube.Elements.StandardWall = function (posX, posY, group) {
 		TurningKube.CurrentWorld.bodyDef.type = TurningKube.CurrentWorld.b2Body.b2_dynamicBody;
-		TurningKube.CurrentWorld.fixDef.shape = new TurningKube.CurrentWorld.b2PolygonShape;
+		TurningKube.CurrentWorld.fixDef.shape = new TurningKube.CurrentWorld.b2PolygonShape();
 		TurningKube.CurrentWorld.fixDef.shape.SetAsBox(1, 1);
-
 		TurningKube.Elements.StandardElem.call(this, posX, posY, group);
-};
-//Declaration
-TurningKube.Elements.StandardWall.prototype = {
-	toto: 10
-};
+		group.Addchild(this.bodyRef);
+	};
+	//Declaration
+	TurningKube.Elements.StandardWall.prototype = {
+		toto: 10
+	};
+})();
+
+(function () {
+	//Prototype
+	TurningKube.Elements.BallMoving = function (posX, posY, group) {
+		TurningKube.CurrentWorld.bodyDef.type = TurningKube.CurrentWorld.b2Body.b2_dynamicBody;
+		TurningKube.CurrentWorld.fixDef.shape = new TurningKube.CurrentWorld.b2CircleShape(1);
+		TurningKube.Elements.StandardElem.call(this, posX, posY, group);
+		this.groupFather = group;
+	};
+	//Declaration
+	TurningKube.Elements.StandardWall.prototype = {
+		groupFather: undefined,
+		currentJoin: undefined,
+		Freezze: function () {
+
+		},
+		UnFreezze: function () {
+			delete this.currentJoin;
+		}
+	};
 })();

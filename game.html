@@ -6,50 +6,30 @@
       <canvas id="canvas" width="800" height="600" style="background-color:#333333;" ></canvas>
    </body>
    <script type="text/javascript" src="Libs/Box2dWeb-2.1.a.3.js"></script>
-   <script type="text/javascript" src="./TurningKube.js">
+
+   <script type="text/javascript" src="./TurningKube.js">  </script>
+   <script type="text/javascript" src="./isHelp.js">  </script>
 
 
-   </script>
+ 
+   <script type="text/javascript" src="Levels/level_demo.js">
+    </script>
+
    <script type="text/javascript">
 	  
 	   var groupLeader;
       function init() {
+
          TurningKube.CurrentWorld = new TurningKube.Elements.World();
-
-        
-         TurningKube.CurrentWorld.fixDef.density = 1.0;
-         TurningKube.CurrentWorld.fixDef.friction = 0.5;
-         TurningKube.CurrentWorld.fixDef.restitution = 0.2;
-
-         groupLeader = new TurningKube.Elements.MovingGroups(10 ,30);
-        
-         for(var i = 0; i < 30; ++i) {
-            new TurningKube.Elements.StandardWall(Math.random() * 79, Math.random() * 59, groupLeader);
-         }
-
-         groupLeader = new TurningKube.Elements.MovingGroups(40 ,30);
-        
-         for(var i = 0; i < 30; ++i) {
-            new TurningKube.Elements.StandardWall(Math.random() * 79, Math.random() * 59, groupLeader);
-         }
-
-         groupLeader = new TurningKube.Elements.MovingGroups(70 ,30);
-        
-         for(var i = 0; i < 30; ++i) {
-            new TurningKube.Elements.StandardWall(Math.random() * 79, Math.random() * 59, groupLeader);
-         }
-
-         var tmp = new TurningKube.Elements.StandardWall(79, 59, groupLeader);
-        // tmp.Freeze();
-         //setup debug draw
-         TurningKube.CurrentWorld.debugDraw = new Box2D.Dynamics.b2DebugDraw();
-			TurningKube.CurrentWorld.debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
-			TurningKube.CurrentWorld.debugDraw.SetDrawScale(10.0);
-			TurningKube.CurrentWorld.debugDraw.SetFillAlpha(0.5);
-			TurningKube.CurrentWorld.debugDraw.SetLineThickness(1.0);
-			TurningKube.CurrentWorld.debugDraw.SetFlags(Box2D.Dynamics.b2DebugDraw.e_shapeBit | Box2D.Dynamics.b2DebugDraw.e_jointBit);
-			TurningKube.CurrentWorld.world.SetDebugDraw(TurningKube.CurrentWorld.debugDraw);
+         TurningKube.CurrentWorld.LoadLevel(level_demo);
          
+          TurningKube.CurrentWorld.debugDraw = new Box2D.Dynamics.b2DebugDraw();
+         TurningKube.CurrentWorld.debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
+         TurningKube.CurrentWorld.debugDraw.SetDrawScale(10.0);
+         TurningKube.CurrentWorld.debugDraw.SetFillAlpha(0.5);
+         TurningKube.CurrentWorld.debugDraw.SetLineThickness(1.0);
+         TurningKube.CurrentWorld.debugDraw.SetFlags(Box2D.Dynamics.b2DebugDraw.e_shapeBit | Box2D.Dynamics.b2DebugDraw.e_jointBit);
+         TurningKube.CurrentWorld.world.SetDebugDraw(TurningKube.CurrentWorld.debugDraw);
          window.setInterval(update, 1000 / 60);
          }
          //mouse
