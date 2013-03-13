@@ -8,7 +8,6 @@
    <script type="text/javascript" src="Libs/Box2dWeb-2.1.a.3.js"></script>
 
    <script type="text/javascript" src="./TurningKube.js">  </script>
-   <script type="text/javascript" src="./isHelp.js">  </script>
 
 
  
@@ -48,6 +47,7 @@
             isMouseDown = false;
             mouseX = undefined;
             mouseY = undefined;
+            TurningKube.CurrentWorld.Freeze();
          }, true);
          
          function handleMouseMove(e) {
@@ -83,7 +83,7 @@
          function update() {
          
 			if (isMouseDown) {
-   			TurningKube.CurrentWorld.Rotation();
+   			
 			}
 
              TurningKube.CurrentWorld.world.Step(1 / 60, 10, 10);

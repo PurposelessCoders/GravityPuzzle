@@ -23,7 +23,7 @@ var level_demo = {
             "parameters": [10, 30]
         },{
             "name": "BallMoving",
-            "parameters": [10, 10]
+            "parameters": [15, 10]
         }, {
             "name": "StandardWall",
             "parameters": [30, 30]
