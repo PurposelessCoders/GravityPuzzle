@@ -3,10 +3,10 @@
   
    </head>
    <body onload="init();">
-      <canvas id="canvas" width="800" height="600" style="background-color:#333333;" ></canvas>
+      <canvas id="Game_TurningKube_canvas" width="800" height="600" style="background-color:#333333;" ></canvas>
    </body>
    <script type="text/javascript" src="Libs/Box2dWeb-2.1.a.3.js"></script>
-
+   <script type="text/javascript" src="Libs/easeljs-0.6.0.min.js"></script>
    <script type="text/javascript" src="./TurningKube.js">  </script>
 
 
@@ -17,24 +17,26 @@
    <script type="text/javascript">
 	  
 	   var groupLeader;
+      function tick() {
+         TurningKube.CurrentWorld.Update();
+      }
       function init() {
 
          TurningKube.CurrentWorld = new TurningKube.Elements.World();
          TurningKube.CurrentWorld.LoadLevel(level_demo);
          
           TurningKube.CurrentWorld.debugDraw = new Box2D.Dynamics.b2DebugDraw();
-         TurningKube.CurrentWorld.debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
+         TurningKube.CurrentWorld.debugDraw.SetSprite(document.getElementById("Game_TurningKube_canvas").getContext("2d"));
          TurningKube.CurrentWorld.debugDraw.SetDrawScale(10.0);
          TurningKube.CurrentWorld.debugDraw.SetFillAlpha(0.5);
          TurningKube.CurrentWorld.debugDraw.SetLineThickness(1.0);
          TurningKube.CurrentWorld.debugDraw.SetFlags(Box2D.Dynamics.b2DebugDraw.e_shapeBit | Box2D.Dynamics.b2DebugDraw.e_jointBit);
          TurningKube.CurrentWorld.world.SetDebugDraw(TurningKube.CurrentWorld.debugDraw);
-         window.setInterval(update, 1000 / 60);
          }
          //mouse
          
          var mouseX, mouseY, mousePVec, isMouseDown, selectedBody;
-         var canvasPosition = getElementPosition(document.getElementById("canvas"));
+         var canvasPosition = getElementPosition(document.getElementById("Game_TurningKube_canvas"));
          
          document.addEventListener("mousedown", function(e) {
             isMouseDown = true;
@@ -77,19 +79,6 @@
             }
             return true;
          }
-         
-         //update
-         
-         function update() {
-         
-			if (isMouseDown) {
-   			
-			}
-
-             TurningKube.CurrentWorld.world.Step(1 / 60, 10, 10);
-             TurningKube.CurrentWorld.world.DrawDebugData();
-             TurningKube.CurrentWorld.world.ClearForces();
-         };
          
          //helpers
          
