@@ -16,6 +16,10 @@ var KEYCODE_C = 67;
 var KEYCODE_V = 86;
 
 /*
+ *	Define Category collider
+ */
+var CATEGORY_GRY = 0x01 // Default
+/*
  * Definitions du package TurningKube
  */
 
@@ -73,7 +77,11 @@ TurningKube.Elements.World = function () {
 
 	this.currentGroup = 0; // Current group for freeze effect
 	this.eventRotation = 0; //  > 0 == unClock; 0 == nothing;  < 0 == clock
+	this.eventRotationMore = false;
+	this.eventRotationLess = false;
 	this.eventNextGroup = 0; // > 0 == this.currentGroup++; 0 == nothing;  < 0 == this.currentGroup--
+	this.eventNextGroupMore = false;
+	this.eventNextGroupLess = false;
 	this.timerNextGroup = 0;
 
 	//Binding Keyboard event
@@ -95,15 +103,19 @@ TurningKube.Elements.World.prototype = {
 				break;
 			case KEYCODE_C:
 				TurningKube.CurrentWorld.eventNextGroup = -1;
+				TurningKube.CurrentWorld.eventNextGroupLess = true;
 				break;
 			case KEYCODE_V:
 				TurningKube.CurrentWorld.eventNextGroup = 1;
+				TurningKube.CurrentWorld.eventNextGroupMore = true;
 				break;
 			case KEYCODE_LEFT:
 				TurningKube.CurrentWorld.eventRotation = -1;
+				TurningKube.CurrentWorld.eventRotationLess = true;
 				break;
 			case KEYCODE_RIGHT:
 				TurningKube.CurrentWorld.eventRotation = 1;
+				TurningKube.CurrentWorld.eventRotationMore = true;
 				break;
 		}
 	},
@@ -114,18 +126,38 @@ TurningKube.Elements.World.prototype = {
 		}
 		switch (key.keyCode) {
 			case KEYCODE_C:
-				TurningKube.CurrentWorld.eventNextGroup = 0;
-				TurningKube.CurrentWorld.timerNextGroup = 10;
+				TurningKube.CurrentWorld.eventNextGroupLess = false;
+				if (TurningKube.CurrentWorld.eventNextGroupMore) {
+					TurningKube.CurrentWorld.eventNextGroup = 1;
+				} else {
+					TurningKube.CurrentWorld.eventNextGroup = 0;
+					TurningKube.CurrentWorld.timerNextGroup = 10;
+				}
 				break;
 			case KEYCODE_V:
-				TurningKube.CurrentWorld.timerNextGroup = 10;
-				TurningKube.CurrentWorld.eventNextGroup = 0;
+				TurningKube.CurrentWorld.eventNextGroupMore = false;
+				if (TurningKube.CurrentWorld.eventNextGroupLess) {
+					TurningKube.CurrentWorld.eventNextGroup = -1;
+				} else {
+					TurningKube.CurrentWorld.eventNextGroup = 0;
+					TurningKube.CurrentWorld.timerNextGroup = 10;
+				}
 				break;
 			case KEYCODE_LEFT:
-				TurningKube.CurrentWorld.eventRotation = 0;
+				TurningKube.CurrentWorld.eventRotationLess = false;
+				if (TurningKube.CurrentWorld.eventRotationMore) {
+					TurningKube.CurrentWorld.eventRotation = 1;
+				} else {
+					TurningKube.CurrentWorld.eventRotation = 0;
+				}
 				break;
 			case KEYCODE_RIGHT:
-				TurningKube.CurrentWorld.eventRotation = 0;
+				TurningKube.CurrentWorld.eventRotationMore = false;
+				if (TurningKube.CurrentWorld.eventRotationLess) {
+					TurningKube.CurrentWorld.eventRotation = -1;
+				} else {
+					TurningKube.CurrentWorld.eventRotation = 0;
+				}
 				break;
 		}
 	},
@@ -162,8 +194,8 @@ TurningKube.Elements.World.prototype = {
 			TurningKube.CurrentWorld.movingGroups.push(myCurrentGroup);
 			for (myJ = 0; myJ < level.Groups[myI].children.length; myJ++) {
 				myObjectName = level.Groups[myI].children[myJ].name;
-				myObjectParameters = level.Groups[myI].children[myJ].parameters;
-				myObjectParameters.push(myCurrentGroup);
+				myObjectParameters = [myCurrentGroup].concat(level.Groups[myI].children[myJ].parameters);
+				console.log("1- " + myObjectParameters.toString());
 
 				(function () {
 					function F(args) {
@@ -192,6 +224,8 @@ TurningKube.Elements.World.prototype = {
 				} else {
 					if (TurningKube.CurrentWorld.currentGroup > 0) {
 						--TurningKube.CurrentWorld.currentGroup;
+					} else if (TurningKube.CurrentWorld.movingGroups.length > 0) {
+						TurningKube.CurrentWorld.currentGroup = TurningKube.CurrentWorld.movingGroups.length - 1;
 					}
 				}
 			}
@@ -273,7 +307,7 @@ TurningKube.Elements.MovingGroups.prototype = {
 
 
 //Prototype
-TurningKube.Elements.StandardElem = function (posX, posY, group) {
+TurningKube.Elements.StandardElem = function (group, posX, posY, collisionID) {
 	//Declaration
 	this.img = undefined;
 	this.bodyRef = undefined;
@@ -293,35 +327,42 @@ TurningKube.Elements.StandardElem.prototype = {
 };
 
 //Prototype
-TurningKube.Elements.StandardWall = function (posX, posY, group) {
+TurningKube.Elements.StandardWall = function (group, posX, posY, collisionID) {
 	TurningKube.CurrentWorld.bodyDef.type = TurningKube.CurrentWorld.b2Body.b2_dynamicBody;
 	TurningKube.CurrentWorld.fixDef.shape = new TurningKube.CurrentWorld.b2PolygonShape();
 	TurningKube.CurrentWorld.fixDef.shape.SetAsBox(1, 1);
-	TurningKube.Elements.StandardElem.call(this, posX, posY, group);
+	TurningKube.Elements.StandardElem.call(this, group, posX, posY, collisionID);
 	group.Addchild(this.bodyRef);
 };
 //Declaration
 TurningKube.Elements.StandardWall.prototype = {};
 
 //Prototype
-TurningKube.Elements.BallMoving = function (posX, posY, group) {
+TurningKube.Elements.BallMoving = function (group, posX, posY, collisionID) {
 	//Declaration
 	this.groupFather = group;
 	this.currentJoin = undefined;
 
 	TurningKube.CurrentWorld.bodyDef.type = TurningKube.CurrentWorld.b2Body.b2_dynamicBody;
 	TurningKube.CurrentWorld.fixDef.shape = new TurningKube.CurrentWorld.b2CircleShape(1);
-	TurningKube.Elements.StandardElem.call(this, posX, posY, group);
+
+	TurningKube.CurrentWorld.fixDef.friction = 2;
+	TurningKube.CurrentWorld.fixDef.restitution = 0.9;
+	TurningKube.Elements.StandardElem.call(this, group, posX, posY, collisionID);
+
+	//Reset values fixDef
+	TurningKube.CurrentWorld.fixDef.friction = 0.5;
+	TurningKube.CurrentWorld.fixDef.restitution = 0.2;
 	group.dynamicChild.push(this);
 };
 
 TurningKube.Elements.BallMoving.prototype = {
 	Freeze: function () {
 		this.bodyRef.SetAwake(false);
-		this.groupFather.localJoint.Initialize(this.groupFather.bodyRef, this.bodyRef, this.groupFather.bodyRef.GetWorldCenter());
-		this.currentJoin = TurningKube.CurrentWorld.world.CreateJoint(this.groupFather.localJoint);
+		//this.groupFather.localJoint.Initialize(this.groupFather.bodyRef, this.bodyRef, this.groupFather.bodyRef.GetWorldCenter());
+		//this.currentJoin = TurningKube.CurrentWorld.world.CreateJoint(this.groupFather.localJoint);
 	},
 	UnFreeze: function () {
-		TurningKube.CurrentWorld.world.DestroyJoint(this.currentJoin);
+		this.bodyRef.SetAwake(true);
 	}
 };
