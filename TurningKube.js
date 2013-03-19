@@ -18,7 +18,12 @@ var KEYCODE_V = 86;
 /*
  *	Define Category collider
  */
-var CATEGORY_GRY = 0x01 // Default
+var CATEGORY_GRAY = 1; // Default
+var CATEGORY_BLUE = 2; // Default
+var CATEGORY_RED = 4; // Default
+var CATEGORY_GREEN = 8; // Default
+var CATEGORY_YELLOW = 16; // Default
+
 /*
  * Definitions du package TurningKube
  */
@@ -314,8 +319,13 @@ TurningKube.Elements.StandardElem = function (group, posX, posY, collisionID) {
 
 	TurningKube.CurrentWorld.bodyDef.position.y = posY;
 	TurningKube.CurrentWorld.bodyDef.position.x = posX;
+	TurningKube.CurrentWorld.bodyDef.filter.categoryBits = collisionID; //current group of collision
+	TurningKube.CurrentWorld.bodyDef.filter.categoryBits = collisionID | CATEGORY_GRAY; //group with interaction: stardard and my group.
 	this.bodyRef = TurningKube.CurrentWorld.world.CreateBody(TurningKube.CurrentWorld.bodyDef);
 	this.bodyRef.CreateFixture(TurningKube.CurrentWorld.fixDef);
+	//reset filter
+	TurningKube.CurrentWorld.bodyDef.filter.categoryBits = CATEGORY_GRAY;
+	TurningKube.CurrentWorld.bodyDef.filter.categoryBits = CATEGORY_GRAY; 
 };
 TurningKube.Elements.StandardElem.prototype = {
 	Freeze: function () {
