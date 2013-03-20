@@ -125,7 +125,10 @@ var level_demo = {
             "parameters": [0, 38]
         },{
             "name": "BallMoving",
-            "parameters": [15, 20]
+            "parameters": [15, 20, 2]
+        },{
+            "name": "BallMoving",
+            "parameters": [15, 25, 4]
         }]
     }, {
         "posX": 40,

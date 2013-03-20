@@ -317,15 +317,18 @@ TurningKube.Elements.StandardElem = function (group, posX, posY, collisionID) {
 	this.img = undefined;
 	this.bodyRef = undefined;
 
+	if (collisionID == undefined) {
+		collisionID = CATEGORY_GRAY;
+	}
 	TurningKube.CurrentWorld.bodyDef.position.y = posY;
 	TurningKube.CurrentWorld.bodyDef.position.x = posX;
-	TurningKube.CurrentWorld.bodyDef.filter.categoryBits = collisionID; //current group of collision
-	TurningKube.CurrentWorld.bodyDef.filter.categoryBits = collisionID | CATEGORY_GRAY; //group with interaction: stardard and my group.
+	TurningKube.CurrentWorld.fixDef.filter.categoryBits = collisionID; //current group of collision
+	TurningKube.CurrentWorld.fixDef.filter.maskBits = collisionID == CATEGORY_GRAY ? 31 : (collisionID | CATEGORY_GRAY); //group with interaction: stardard and my group.
 	this.bodyRef = TurningKube.CurrentWorld.world.CreateBody(TurningKube.CurrentWorld.bodyDef);
 	this.bodyRef.CreateFixture(TurningKube.CurrentWorld.fixDef);
 	//reset filter
-	TurningKube.CurrentWorld.bodyDef.filter.categoryBits = CATEGORY_GRAY;
-	TurningKube.CurrentWorld.bodyDef.filter.categoryBits = CATEGORY_GRAY; 
+	TurningKube.CurrentWorld.fixDef.filter.categoryBits = CATEGORY_GRAY;
+	TurningKube.CurrentWorld.fixDef.filter.maskBits = CATEGORY_GRAY;
 };
 TurningKube.Elements.StandardElem.prototype = {
 	Freeze: function () {
